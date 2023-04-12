@@ -10,6 +10,7 @@ const CLIENT_AUTH = "MjhkODBiYWQ2MWVhNDAyOGJiZDA3MzgxMDg0ZDViZWI6ZTY5ZWQ0YWZkMzQ
 function App(){
 	const[searchInput, setSearchInput] = useState("");
 	const[accessToken, setAccessToken] = useState("");
+	const[albums, setAlbums] = useState([]);
 
 	useEffect(() => {
 		console.log(CLIENT_AUTH.toString('base64'));
@@ -26,17 +27,50 @@ function App(){
 		}
 		fetch('https://accounts.spotify.com/api/token', authParameters)
 			.then(result => result.json())
-			.then(data => setAccessToken(data.accessToken))
+			.then(data => setAccessToken(data.access_token))
 	}, [])
+
+
+
+
+
+
+
 
 	async function search(){
 		console.log("Search for " + searchInput);
 
 		//GET request pra pegar id das musicas
+		var searchParameters = {
+			method: 'GET',
+			headers: {
+				'Content-Type' : 'application/json',
+				'Authorization': 'Bearer ' + accessToken
+			}
+		}
+		var artistID = await fetch('https://api.spotify.com/v1/search?q=' + searchInput + '&type=artist', searchParameters)
+			.then(response => response.json())
+			.then(data => {return data.artists.items[0].id})
+
 		// https://api.spotify.com/v1/search
 		// 'q=' + pesquisa + '&type=track'
 		// data.items.external_urls.spotify
+
+		var returnedAlbums = await fetch('https://api.spotify.com/v1/artists/' + artistID + '/albums' + '?include_groups=album&market=BR&limit=50', searchParameters)
+			.then(response => response.json())
+			.then(data => setAlbums(data.items))
 	}
+
+
+
+
+
+
+
+
+
+
+
 
 	return(
 		<div className="App">
@@ -59,30 +93,17 @@ function App(){
 			</Container>
 			<Container>
 				<Row className="mx-2 row row-cols-4">
-				<Card>
-						<Card.Img src="#" />
-						<Card.Body>
-							<Card.Title>Album name here</Card.Title>
-						</Card.Body>
-					</Card>
-					<Card>
-						<Card.Img src="#" />
-						<Card.Body>
-							<Card.Title>Album name here</Card.Title>
-						</Card.Body>
-					</Card>
-					<Card>
-						<Card.Img src="#" />
-						<Card.Body>
-							<Card.Title>Album name here</Card.Title>
-						</Card.Body>
-					</Card>
-					<Card>
-						<Card.Img src="#" />
-						<Card.Body>
-							<Card.Title>Album name here</Card.Title>
-						</Card.Body>
-					</Card>
+					{albums.map( (album, i) => {
+						console.log(album)
+						return (
+							<Card>
+								<Card.Img src={album.images[0].url} />
+								<Card.Body>
+									<Card.Title>{album.name}</Card.Title>
+								</Card.Body>
+							</Card>
+						)
+					})}
 				</Row>
 			</Container>
 		</div>
