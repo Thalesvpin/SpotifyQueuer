@@ -123,12 +123,12 @@ function App(){
 					</Button>
 				</InputGroup>
 			</Container>
-			<Container>
-				<Row className="mx-2 row row-cols-4">
+			<Container className="card">
+			    <Row className="mx-2 row row-cols-1">
 					{tracks.map( (track, i) => {
 						// console.log(track)
 						return (
-							<Card tag='a' onClick={() => addToQueue(track.uri)} style={{ cursor: "pointer" }}>
+							<Card className="mb-3 card2" tag='a' onClick={() => addToQueue(track.uri)} style={{ cursor: "pointer" }}>
 								<Card.Img src={track.album.images[0].url} />
 								<Card.Body>
 									<Card.Title>{track.name}</Card.Title>									
