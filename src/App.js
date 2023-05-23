@@ -1,7 +1,8 @@
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Container, InputGroup, FormControl, Button, Row, Card} from 'react-bootstrap';
+import {InputGroup, FormControl, Button} from 'react-bootstrap';
 import {useState, useEffect} from 'react';
+import logo from "./imgs/logo.png";
 
 // const CLIENT_ID = "28d80bad61ea4028bbd07381084d5beb";
 // const CLIENT_SECRET = "e69ed4afd34341578d7f17e97f3fbc3a";
@@ -13,6 +14,7 @@ function App(){
 	const[accessToken, setAccessToken] = useState("");
 	// const[albums, setAlbums] = useState([]);
 	const[tracks, setTracks] = useState([]);
+	const [cor, setCor] = useState("");
 
 	useEffect(() => {
 		console.log(CLIENT_AUTH.toString('base64'));
@@ -92,8 +94,9 @@ function App(){
 				console.log(data);
 				setTracks(data.tracks.items);
 			})
-
 	}
+
+	
 
 
 
@@ -105,8 +108,12 @@ function App(){
 
 
 	return(
-		<div className="App">
-			<Container>
+		<div className="App dark">
+			<div className='py-5'>
+				<img className="logo linha" src={logo}></img>
+				<h1 className='linha'>Queuer</h1>
+			</div>
+			<div>
 				<InputGroup className="mb3" size="lg">
 					<FormControl
 						placeholder="Buscar..."
@@ -122,22 +129,21 @@ function App(){
 						Buscar
 					</Button>
 				</InputGroup>
-			</Container>
-			<Container className="card">
-			    <Row className="mx-2 row row-cols-1">
-					{tracks.map( (track, i) => {
-						// console.log(track)
-						return (
-							<Card className="mb-3 card2" tag='a' onClick={() => addToQueue(track.uri)} style={{ cursor: "pointer" }}>
-								<Card.Img src={track.album.images[0].url} />
-								<Card.Body>
-									<Card.Title>{track.name}</Card.Title>									
-								</Card.Body>
-							</Card>
-						)
-					})}
-				</Row>
-			</Container>
+			</div>
+			<div className="result mx-2 row row-cols-1 dark">
+				{tracks.map( (track, i) => {
+					// console.log(track)
+					return (
+						<div className="cartao dark my-1 borda" onClick={() => addToQueue(track.uri)} style={{ cursor: "pointer" }}>
+							<img className="cartao linha cover py-1" src={track.album.images[0].url}></img>
+							<p className="linha">{track.name}</p>
+							
+
+						</div>
+						
+					)
+				})}
+			</div>
 		</div>
 	);
 }
