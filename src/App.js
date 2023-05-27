@@ -1,3 +1,6 @@
+
+
+
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {InputGroup, FormControl, Button} from 'react-bootstrap';
@@ -108,12 +111,12 @@ function App(){
 
 
 	return(
-		<div className="App dark">
-			<div className='py-5'>
+		<div id="geral" className="geral App dark">
+			<div id="logo" className='py-5'>
 				<img className="logo linha" src={logo}></img>
 				<h1 className='linha'>Queuer</h1>
 			</div>
-			<div>
+			<div id="pesquisa" className="dark">
 				<InputGroup className="mb3" size="lg">
 					<FormControl
 						placeholder="Buscar..."
@@ -125,18 +128,18 @@ function App(){
 						}}
 						onChange={event => setSearchInput(event.target.value)}
 					/>
-					<Button onClick={search}>
+					<button className="btn btn-success" onClick={search}>
 						Buscar
-					</Button>
+					</button>
 				</InputGroup>
 			</div>
-			<div className="result mx-2 row row-cols-1 dark">
+			<div id="resultado" className="result mx-2 row row-cols-1 dark">
 				{tracks.map( (track, i) => {
 					// console.log(track)
 					return (
 						<div className="cartao dark my-1 borda" onClick={() => addToQueue(track.uri)} style={{ cursor: "pointer" }}>
 							<img className="cartao linha cover py-1" src={track.album.images[0].url}></img>
-							<p className="linha">{track.name}</p>
+							<p className="mx-2 linha">{track.name}</p>
 							
 
 						</div>
@@ -149,3 +152,6 @@ function App(){
 }
 
 export default App;
+
+
+
