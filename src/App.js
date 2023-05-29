@@ -12,12 +12,22 @@ import logo from "./imgs/logo.png";
 const CLIENT_AUTH = "MjhkODBiYWQ2MWVhNDAyOGJiZDA3MzgxMDg0ZDViZWI6ZTY5ZWQ0YWZkMzQzNDE1NzhkN2YxN2U5N2YzZmJjM2E=";
 const REFRESH_TOKEN = "AQA-46a_erftWahtM8Rmu4iYAFZBzITDUza3rKYSjaB74btApWdBxaEpG-zfc4vWcsDIXVJAok8S2fBreovrCFMhc1e4rRmJsYSHEQkyycm8fZFqHz0HyBpcmgLiETyp3Io";
 
+const body = document.querySelector("#root");
+
+function delay(ms){
+	return new Promise(resolve => 
+		setTimeout(resolve, ms)
+	);
+};
+
 function App(){
 	const[searchInput, setSearchInput] = useState("");
 	const[accessToken, setAccessToken] = useState("");
 	// const[albums, setAlbums] = useState([]);
 	const[tracks, setTracks] = useState([]);
 	const [cor, setCor] = useState("");
+	const [isLocked, setIsLocked] = useState(false);
+	const [isClicked, setIsClicked] = useState(false);
 
 	useEffect(() => {
 		console.log(CLIENT_AUTH.toString('base64'));
@@ -72,7 +82,7 @@ function App(){
 		// 	.then(response => response.json())
 		// 	.then(data => setAlbums(data.items))
 
-//===================================================================
+//=================================================================== aqui
 	
 		const trackID = await fetch('https://api.spotify.com/v1/search?q=' + searchInput + '&type=track&limit=50', searchParameters)
 			.then(response => response.json())
@@ -96,25 +106,62 @@ function App(){
 			.then(data => {
 				console.log(data);
 				setTracks(data.tracks.items);
+
 			})
+		
 	}
 
+	async function handleMusicSelection(trackUri){
+		if(isLocked){
+			return 1;
+		}
+		addToQueue(trackUri);
+		setIsLocked(true);
+
+		setIsClicked(true);
+
+		createAlert(alert());
+		setIsLocked(false);
+		await delay(3000);
+		removeAlert();
+	}
+
+	function createAlert(passInAlert){
+		let createAlertElement = document.createElement("alert");
+		createAlertElement.innerHTML = passInAlert;
+		body.appendChild(createAlertElement);
+	}
+
+	const alert = () =>
+		`
+			<div class="alert">
+				<div class="alert-container">
+					<div class="alert-content alert-success">
+						<div class="alert-header">
+							<span class="alert-message">Música adicionada!</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		`;
 	
-
-
-
-
-
-
+	function removeAlert(){
+		const newAlert = document.querySelector("alert");
+		newAlert.remove();
+	}
 
 
 
 
 	return(
 		<div id="geral" className="geral App dark">
-			<div id="logo" className='py-5'>
-				<img className="logo linha" src={logo}></img>
-				<h1 className='linha'>Queuer</h1>
+			<div id="logo-sup">
+				<div id="logo" className='py-5'>
+					<img id="logo-img" className="logo linha" src={logo}></img>
+					<div className='linha logo-txt'>
+						<h1 className="font sptfy-green title">Queuer</h1>
+					</div>
+				</div>
 			</div>
 			<div id="pesquisa" className="dark">
 				<InputGroup className="mb3" size="lg">
@@ -135,15 +182,11 @@ function App(){
 			</div>
 			<div id="resultado" className="result mx-2 row row-cols-1 dark">
 				{tracks.map( (track, i) => {
-					// console.log(track)
 					return (
-						<div className="cartao dark my-1 borda" onClick={() => addToQueue(track.uri)} style={{ cursor: "pointer" }}>
+						<div id="card" className="cartao dark my-1 borda" onClick={() => handleMusicSelection(track.uri)} style={{ cursor: "pointer" }}>
 							<img className="cartao linha cover py-1" src={track.album.images[0].url}></img>
-							<p className="mx-2 linha">{track.name}</p>
-							
-
+							<p className="mx-2 my-0 linha songName">{track.name}</p>
 						</div>
-						
 					)
 				})}
 			</div>
@@ -152,6 +195,4 @@ function App(){
 }
 
 export default App;
-
-
 
