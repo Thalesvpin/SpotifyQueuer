@@ -115,7 +115,7 @@ function App(){
 		if(isLocked){
 			return 1;
 		}
-		addToQueue(trackUri);
+		// addToQueue(trackUri);
 		setIsLocked(true);
 
 		setIsClicked(true);
@@ -134,16 +134,13 @@ function App(){
 
 	const alert = () =>
 		`
-			<div class="alert">
-				<div class="alert-container">
-					<div class="alert-content alert-success">
-						<div class="alert-header">
-							<span class="alert-message">Música adicionada!</span>
-						</div>
-					</div>
-				</div>
+		<div class="alert">
+			<div class="alert-content alert-success alert-header alert-container">
+				<p class="alert-message">Música adicionada!</p>
 			</div>
-		`;
+		</div>
+		`
+		;
 	
 	function removeAlert(){
 		const newAlert = document.querySelector("alert");
