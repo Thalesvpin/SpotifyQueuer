@@ -155,12 +155,11 @@ function App(){
 
 	return(
 		<div id="geral" className="geral App dark">
-			<div id="logo-sup">
-				<div id="logo" className='py-5'>
-					<img id="logo-img" className="logo linha" src={logo}></img>
-					<div className='linha logo-txt'>
-						<h1 className="font sptfy-green title">Queuer</h1>
-					</div>
+			<div id="header" className=''>
+				<img id="logo-img" className="logo" src={logo}></img>
+				<div className='linha logo-txt'>
+					<p className="font sptfy-green title">Queuer</p>
+					<p className="font sptfy-green autor">By Thales</p>
 				</div>
 			</div>
 			<div id="pesquisa" className="dark">
