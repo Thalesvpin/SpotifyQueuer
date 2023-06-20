@@ -115,7 +115,7 @@ function App(){
 		if(isLocked){
 			return 1;
 		}
-		// addToQueue(trackUri);
+		addToQueue(trackUri);
 		setIsLocked(true);
 
 		setIsClicked(true);
