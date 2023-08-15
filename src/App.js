@@ -154,9 +154,9 @@ function App(){
 		<div id="geral" className="geral App dark">
 			<div id="header" className=''>
 				<img id="logo-img" className="logo" src={logo}></img>
-				<div className='linha logo-txt'>
-					<p className="font sptfy-green title">Queuer</p>
-					<p className="font sptfy-green autor">By Thales</p>
+				<div className='linha logo-txt-cont'>
+					<p className="font sptfy-green title logo-txt">Queuer</p>
+					<p className="font sptfy-green autor logo-txt">By Thales P.</p>
 				</div>
 			</div>
 			<div id="pesquisa" className="dark">
