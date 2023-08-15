@@ -31,13 +31,14 @@ function App(){
 
 	useEffect(() => {
 		document.title = "Spotify Queuer";
-		
 		const newFaviconPath = logo;
   		const favicon = document.querySelector('link[rel="icon"]');
   		if(favicon){
     		favicon.href = newFaviconPath;
  		}
+
 		console.log(CLIENT_AUTH.toString('base64'));
+		
 		//API Access Token
 		var authParameters = {
 			method: 'POST',
