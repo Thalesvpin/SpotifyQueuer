@@ -54,7 +54,7 @@ body {
 }
 @keyframes spin {
 	0%{
-		left: 90px;
+		left: 93px;
 		transform: scale(50%) rotate(0);
 	}
 	40%{
