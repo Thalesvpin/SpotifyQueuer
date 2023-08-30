@@ -21,13 +21,22 @@ function delay(ms){
 };
 
 function App(){
-	const[searchInput, setSearchInput] = useState("");
-	const[accessToken, setAccessToken] = useState("");
-	// const[albums, setAlbums] = useState([]);
-	const[tracks, setTracks] = useState([]);
+	const [searchInput, setSearchInput] = useState("");
+	const [accessToken, setAccessToken] = useState("");
+	const [tracks, setTracks] = useState([]);
+	const [currentTrack, setCurrentTrack] = useState([]);
 	const [cor, setCor] = useState("");
 	const [isLocked, setIsLocked] = useState(false);
 	const [isClicked, setIsClicked] = useState(false);
+	const [clickLocker, setClickLocker] = useState(false);
+
+	const searchParameters = {
+		method: 'GET',
+		headers: {
+			'Content-Type' : 'application/json',
+			'Authorization': 'Bearer ' + accessToken
+		}
+	};
 
 	useEffect(() => {
 		console.log(CLIENT_AUTH.toString('base64'));
@@ -51,12 +60,54 @@ function App(){
 			})
 	}, [])
 
+	async function getQueue(){
+		console.log("Requesting current queue");
 
+		let pesquisa = document.querySelector('#pesquisa');
+		let queueHeader = document.createElement('div');
+		queueHeader.id = "queueHeader";
+		// queueHeader.style.cursor = "pointer";
+		queueHeader.className = "alnL mx-2 row row-cols-1";
+		
+
+		const queue = await fetch('https://api.spotify.com/v1/me/player/queue', searchParameters)
+			.then(response => response.json())
+			.then(data => {
+				setIsLocked(true);
+				setTracks(data.queue);
+				setCurrentTrack(data.currently_playing);
+				removeCurrentSongCard();
+
+				// let content = 
+				// 	`
+				// 	<p> Em reprodução </p>
+				// 	<div id="card" class="cartao dark my-1 borda">
+				// 		<img class="cartao linha cover py-1" src=${currentTrack.album.images[0].url}></img>
+				// 		<p class="mx-2 my-0 linha songName">${currentTrack.name}</p>
+				// 	</div>
+				// 	<p> A seguir </p>
+				// 	`
+				// ;
+				let content = '<p> A seguir </p>';
+				queueHeader.innerHTML = content;
+				pesquisa.after(queueHeader);
+			})
+	}
+
+	function removeCurrentSongCard(){
+		let fila = document.querySelector("#queueHeader");
+		if(fila != null){
+			fila.remove();
+		}	
+	}
 
 	async function search(){
 		console.log("Search for " + searchInput);
 		console.log("access token response " + accessToken);
 
+		setIsLocked(false);
+
+		removeCurrentSongCard();
 
 		// https://api.spotify.com/v1/search
 		// 'q=' + pesquisa + '&type=track'
@@ -64,13 +115,13 @@ function App(){
 
 
 		//GET request pra pegar id das musicas
-		const searchParameters = {
-			method: 'GET',
-			headers: {
-				'Content-Type' : 'application/json',
-				'Authorization': 'Bearer ' + accessToken
-			}
-		}
+		// const searchParameters = {
+		// 	method: 'GET',
+		// 	headers: {
+		// 		'Content-Type' : 'application/json',
+		// 		'Authorization': 'Bearer ' + accessToken
+		// 	}
+		// }
 
 
 //PESQUISA ALBUNS DO ARTISTA INSERIDO ===============================
@@ -141,7 +192,7 @@ function App(){
 			</div>
 		</div>
 		`
-		;
+	;
 	
 	function removeAlert(){
 		const newAlert = document.querySelector("alert");
@@ -162,6 +213,9 @@ function App(){
 				</div>
 			</div>
 			<div id="pesquisa" className="dark">
+				<button className="btn btn-success" onClick={getQueue}>
+					Fila
+				</button>
 				<InputGroup className="mb3" size="lg">
 					<FormControl
 						placeholder="Buscar..."
@@ -178,7 +232,7 @@ function App(){
 					</button>
 				</InputGroup>
 			</div>
-			<div id="resultado" className="result mx-2 row row-cols-1 dark">
+			<div id="resultado" className="mx-2 row row-cols-1 dark">
 				{tracks.map( (track, i) => {
 					return (
 						<div id="card" className="cartao dark my-1 borda" onClick={() => handleMusicSelection(track.uri)} style={{ cursor: "pointer" }}>

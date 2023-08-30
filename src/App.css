@@ -110,6 +110,7 @@ body {
 .font {
 	font-family: var(--font-family,CircularSpTitle,CircularSpTitle-Tall,CircularSp-Arab,CircularSp-Hebr,CircularSp-Cyrl,CircularSp-Grek,CircularSp-Deva,var(--fallback-fonts,sans-serif));
 }
+
 .songName {
 	color: white;
 	width: 66vw;
@@ -122,8 +123,6 @@ body {
 .borda {
 	border: 1px solid #373d48;
 }
-
-/* SUCCESS ALERT */
 
 .alert{
 	position: fixed !important;
@@ -195,6 +194,14 @@ body {
 	margin-top: 7px;
 }
 
+.queueHeader, p {
+	color: white;
+}
+
+.alnL {
+	text-align: left;
+}
+
 /* Linha para centralizar animação */
 /* .geral::before {
 	content: "";
@@ -207,3 +214,8 @@ body {
 	transform: translateX(-50%);
 	z-index: 9998;
   } */
+
+/* .contorno {
+	border: 1px solid red;
+} */
+
