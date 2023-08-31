@@ -117,7 +117,8 @@ function App(){
 
 		setIsLocked(false);
 
-		removeCurrentSongCard();
+		// removeCurrentSongCard();
+		setHaveAtual(false);
 
 		// https://api.spotify.com/v1/search
 		// 'q=' + pesquisa + '&type=track'
