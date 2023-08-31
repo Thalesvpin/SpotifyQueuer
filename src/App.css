@@ -215,7 +215,11 @@ body {
 	z-index: 9998;
   } */
 
-/* .contorno {
+.contorno {
 	border: 1px solid red;
-} */
+	
+}
 
+.btn-fila {
+	margin-bottom: 20px;
+}

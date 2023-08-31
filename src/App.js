@@ -78,17 +78,17 @@ function App(){
 				setCurrentTrack(data.currently_playing);
 				removeCurrentSongCard();
 
-				// let content = 
-				// 	`
-				// 	<p> Em reprodução </p>
-				// 	<div id="card" class="cartao dark my-1 borda">
-				// 		<img class="cartao linha cover py-1" src=${currentTrack.album.images[0].url}></img>
-				// 		<p class="mx-2 my-0 linha songName">${currentTrack.name}</p>
-				// 	</div>
-				// 	<p> A seguir </p>
-				// 	`
-				// ;
-				let content = '<p> A seguir </p>';
+				let content = 
+					`
+					<p> Em reprodução </p>
+					<div id="card" class="cartao dark my-1 borda">
+						<img class="cartao linha cover py-1" src=${currentTrack.album.images[0].url}></img>
+						<p class="mx-2 my-0 linha songName">${currentTrack.name}</p>
+					</div>
+					<p> A seguir </p>
+					`
+				;
+				// let content = '<p class="contorno"> A seguir </p>';
 				queueHeader.innerHTML = content;
 				pesquisa.after(queueHeader);
 			})
@@ -213,7 +213,7 @@ function App(){
 				</div>
 			</div>
 			<div id="pesquisa" className="dark">
-				<button className="btn btn-success" onClick={getQueue}>
+				<button className="btn btn-success btn-fila" onClick={getQueue}>
 					Fila
 				</button>
 				<InputGroup className="mb3" size="lg">
