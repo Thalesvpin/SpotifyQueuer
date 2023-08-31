@@ -63,7 +63,13 @@ function App(){
 			})
 	}, [])
 
-	
+
+
+	// queue()
+
+	// const queue = () => {}
+
+	// arrow function to use useEffect (useEffect serve pra ficar de olho em algo que possa ser mudado)
 
 	async function getQueue(){
 		console.log("Requesting current queue");
@@ -73,7 +79,7 @@ function App(){
 		queueHeader.id = "queueHeader";
 		// queueHeader.style.cursor = "pointer";
 		queueHeader.className = "alnL mx-2 row row-cols-1";
-		
+
 		const queue = await fetch('https://api.spotify.com/v1/me/player/queue', searchParameters)
 			.then(response => response.json())
 			.then(data => {
@@ -81,7 +87,7 @@ function App(){
 				setTracks(data.queue);
 				setHaveAtual(data.currently_playing);
 				removeCurrentSongCard();
-
+			
 				let content = 
 					`
 					<p> Em reprodução </p>
@@ -204,6 +210,7 @@ function App(){
 	}
 
 
+
 	return(
 		<div id="geral" className="geral App dark">
 			<title>Spotify Queuer</title>
@@ -234,16 +241,16 @@ function App(){
 					</button>
 				</InputGroup>
 			</div>
-			<div id="resultado" className="mx-2 row row-cols-1 dark">
+			<div id="resultado" className="alnL mx-2 row row-cols-1 dark">
 				{haveAtual && (
-					
+						
 						<>
-						<p> Em reprodução </p>
-						<div id="card" class="cartao dark my-1 borda">
-							<img class="cartao linha cover py-1" src={haveAtual.album.images[0].url}></img>
-							<p class="mx-2 my-0 linha songName">{haveAtual.name}</p>
+						<p id="emRep"> Em reprodução </p>
+						<div id="card" className="cartao dark my-1 borda">
+							<img className="cartao linha cover py-1" src={haveAtual.album.images[0].url}></img>
+							<p className="mx-2 my-0 linha songName">{haveAtual.name}</p>
 						</div>
-						<p> A seguir </p>
+						<p id="next"> A seguir </p>
 						</>	
 					)
 				}

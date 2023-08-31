@@ -220,6 +220,17 @@ body {
 	
 }
 
+
+
 .btn-fila {
 	margin-bottom: 20px;
+}
+
+#emRep, #next, .title, .autor{
+	color: #00d95f;
+	text-shadow: 1px 1px 1px #00000098;
+}
+
+#logo-img{
+	filter: drop-shadow(2px 2px 1px rgba(0, 0, 0, 0.603));
 }
