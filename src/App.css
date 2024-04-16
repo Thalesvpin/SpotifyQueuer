@@ -164,11 +164,9 @@ body {
 	flex-direction: column;
 	width: 100%;
 	pointer-events: auto;
-	background-color: inherit;
+	/* background-color: inherit; */
 	border-radius: 0.4rem;
 	outline: 0;
-	border-left:5px solid #008439;
-
 }
 
 .alert-header {
@@ -185,17 +183,41 @@ body {
 .alert-success {
 	background-color: #cff6e4;
 	color: #008439;
-
+	border-left:5px solid #008439;
 }
 
-.alert-message {
+.alert-error {
+	background-color: #ff8b8b;
+	color: #9a0000;
+	border-left:5px solid #9a0000;
+}
+
+.alert-msg {
 	font-size: 20px;
 	width: 100%;
 	margin-top: 7px;
 }
 
+p.success {
+	color: #008439;
+}
+
+p.error {
+	color: #9a0000;
+}
+
 .queueHeader, p {
 	color: white;
+}
+
+.notListening {
+	padding-top: 50px;
+}
+
+.notListening p {
+	text-align: center;
+	color: #00d95f;
+	font-size: 30px;
 }
 
 .alnL {

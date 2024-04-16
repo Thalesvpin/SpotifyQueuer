@@ -3,7 +3,7 @@
 
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import {InputGroup, FormControl, Button} from 'react-bootstrap';
+import {InputGroup, FormControl} from 'react-bootstrap';
 import {useState, useEffect} from 'react';
 import logo from "./imgs/logo.png";
 
@@ -13,6 +13,7 @@ const CLIENT_AUTH = "MjhkODBiYWQ2MWVhNDAyOGJiZDA3MzgxMDg0ZDViZWI6ZTY5ZWQ0YWZkMzQ
 const REFRESH_TOKEN = "AQA-46a_erftWahtM8Rmu4iYAFZBzITDUza3rKYSjaB74btApWdBxaEpG-zfc4vWcsDIXVJAok8S2fBreovrCFMhc1e4rRmJsYSHEQkyycm8fZFqHz0HyBpcmgLiETyp3Io";
 
 const body = document.querySelector("#root");
+const searchBar = document.querySelector("#search-bar");
 
 function delay(ms){
 	return new Promise(resolve => 
@@ -24,11 +25,8 @@ function App(){
 	const [searchInput, setSearchInput] = useState("");
 	const [accessToken, setAccessToken] = useState("");
 	const [tracks, setTracks] = useState([]);
-	const [currentTrack, setCurrentTrack] = useState([]);
-	const [cor, setCor] = useState("");
 	const [isLocked, setIsLocked] = useState(false);
-	const [isClicked, setIsClicked] = useState(false);
-	const [clickLocker, setClickLocker] = useState(false);
+	const [isListening, setIsListening] = useState(true);
 
 	const [haveAtual, setHaveAtual] = useState('');
 
@@ -59,7 +57,8 @@ function App(){
 		fetch('https://accounts.spotify.com/api/token', authParameters)
 			.then(result => result.json())
 			.then(data => {
-				setAccessToken(data.access_token)
+				setAccessToken(data.access_token);
+				console.log(`accessToken: Bearer ${data.access_token}`)
 			})
 	}, [])
 
@@ -72,36 +71,35 @@ function App(){
 	// arrow function to use useEffect (useEffect serve pra ficar de olho em algo que possa ser mudado)
 
 	async function getQueue(){
-		console.log("Requesting current queue");
+		clearSearchBar();
 
-		let pesquisa = document.querySelector('#pesquisa');
 		let queueHeader = document.createElement('div');
 		queueHeader.id = "queueHeader";
 		// queueHeader.style.cursor = "pointer";
 		queueHeader.className = "alnL mx-2 row row-cols-1";
 
-		const queue = await fetch('https://api.spotify.com/v1/me/player/queue', searchParameters)
+		await fetch('https://api.spotify.com/v1/me/player/queue', searchParameters)
 			.then(response => response.json())
 			.then(data => {
 				setIsLocked(true);
-				setTracks(data.queue);
-				setHaveAtual(data.currently_playing);
-				removeCurrentSongCard();
-			
-				let content = 
-					`
-					<p> Em reprodução </p>
-					<div id="card" class="cartao dark my-1 borda">
-						<img class="cartao linha cover py-1" src=${currentTrack.album.images[0].url}></img>
-						<p class="mx-2 my-0 linha songName">${currentTrack.name}</p>
-					</div>
-					<p> A seguir </p>
-					`
-				;
-				// let content = '<p class="contorno"> A seguir </p>';
-				queueHeader.innerHTML = content;
-				//pesquisa.after(queueHeader);
+				if(data.currently_playing == null){
+					setIsListening(false);
+				}
+				else{
+					setTracks(data.queue);
+					setHaveAtual(data.currently_playing);
+					removeCurrentSongCard();
+					setIsListening(true);
+				}
 			})
+
+	}
+
+	function clearSearchBar(){
+		if(searchInput !== ""){
+			searchBar.value = "";
+			setSearchInput("");
+		}
 	}
 
 	function removeCurrentSongCard(){
@@ -114,6 +112,8 @@ function App(){
 	async function search(){
 		console.log("Search for " + searchInput);
 		console.log("access token response " + accessToken);
+
+		setIsListening(true)
 
 		setIsLocked(false);
 
@@ -147,12 +147,14 @@ function App(){
 
 //=================================================================== aqui
 	
-		const trackID = await fetch('https://api.spotify.com/v1/search?q=' + searchInput + '&type=track&limit=50', searchParameters)
+		await fetch('https://api.spotify.com/v1/search?q=' + searchInput + '&type=track&limit=50', searchParameters)
 			.then(response => response.json())
 			.then(data => {
 				console.log(data);
 				setTracks(data.tracks.items);
 			})
+		
+		clearSearchBar();
 	}
 
 	async function addToQueue(trackUri){
@@ -164,14 +166,15 @@ function App(){
 				'Authorization': 'Bearer ' + accessToken
 			}
 		}
-		const trackID = await fetch('https://api.spotify.com/v1/me/player/queue?uri=' + trackUri, queueParameters)
-			.then(response => response.json())
-			.then(data => {
-				console.log(data);
-				setTracks(data.tracks.items);
-
+		await fetch('https://api.spotify.com/v1/me/player/queue?uri=' + trackUri, queueParameters)
+			.then(response => {
+				if(response.status === 204){
+					createAlert(songAddedAlert());
+				}
+				else{
+					createAlert(userNotListeningAlert());				
+				}
 			})
-		
 	}
 
 	async function handleMusicSelection(trackUri){
@@ -181,11 +184,9 @@ function App(){
 		addToQueue(trackUri);
 		setIsLocked(true);
 
-		setIsClicked(true);
-
-		createAlert(alert());
+		await delay(500);
 		setIsLocked(false);
-		await delay(3000);
+		await delay(2500);
 		removeAlert();
 	}
 
@@ -195,11 +196,21 @@ function App(){
 		body.appendChild(createAlertElement);
 	}
 
-	const alert = () =>
+	const songAddedAlert = () =>
 		`
 		<div class="alert">
 			<div class="alert-content alert-success alert-header alert-container">
-				<p class="alert-message">Música adicionada!</p>
+				<p class="alert-msg success">Música adicionada!</p>
+			</div>
+		</div>
+		`
+	;
+
+	const userNotListeningAlert = () =>
+		`
+		<div class="alert">
+			<div class="alert-content alert-error alert-header alert-container">
+				<p class="alert-msg error">Música não adicionada!</p>
 			</div>
 		</div>
 		`
@@ -210,13 +221,11 @@ function App(){
 		newAlert.remove();
 	}
 
-
-
 	return(
 		<div id="geral" className="geral App dark">
 			<title>Spotify Queuer</title>
 			<div id="header" className=''>
-				<img id="logo-img" className="logo" src={logo}></img>
+				<img id="logo-img" className="logo" src={logo} alt=""></img>
 				<div className='linha logo-txt-cont'>
 					<p className="font sptfy-green title logo-txt">Queuer</p>
 					<p className="font sptfy-green autor logo-txt">By Thales P.</p>
@@ -228,6 +237,7 @@ function App(){
 				</button>
 				<InputGroup className="mb3" size="lg">
 					<FormControl
+						id="search-bar"
 						placeholder="Buscar..."
 						type="input"
 						onKeyPress={event => {
@@ -248,7 +258,7 @@ function App(){
 						<>
 						<p id="emRep"> Em reprodução </p>
 						<div id="card" className="cartao dark my-1 borda">
-							<img className="cartao linha cover py-1" src={haveAtual.album.images[0].url}></img>
+							<img className="cartao linha cover py-1" src={haveAtual.album.images[0].url} alt="song album"></img>
 							<p className="mx-2 my-0 linha songName">{haveAtual.name}</p>
 						</div>
 						<p id="next"> A seguir </p>
@@ -256,10 +266,20 @@ function App(){
 					)
 				}
 
+				{!isListening && (
+					<>
+					<div className="notListening">
+						<p>Thales não está ouvindo nada no momento!</p>
+						<p>Tente novamente mais tarde.</p>
+					</div>
+					</>	
+					)
+				}
+
 				{tracks.map( (track, i) => {
 					return (
 						<div id="card" className="cartao dark my-1 borda" onClick={() => handleMusicSelection(track.uri)} style={{ cursor: "pointer" }}>
-							<img className="cartao linha cover py-1" src={track.album.images[0].url}></img>
+							<img className="cartao linha cover py-1" src={track.album.images[0].url} alt="song album"></img>
 							<p className="mx-2 my-0 linha songName">{track.name}</p>
 						</div>
 					)
