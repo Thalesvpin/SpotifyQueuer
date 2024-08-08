@@ -7,10 +7,10 @@ import {InputGroup, FormControl} from 'react-bootstrap';
 import {useState, useEffect} from 'react';
 import logo from "./imgs/logo.png";
 
-// const CLIENT_ID = "28d80bad61ea4028bbd07381084d5beb";
-// const CLIENT_SECRET = "e69ed4afd34341578d7f17e97f3fbc3a";
-const CLIENT_AUTH = "MjhkODBiYWQ2MWVhNDAyOGJiZDA3MzgxMDg0ZDViZWI6ZTY5ZWQ0YWZkMzQzNDE1NzhkN2YxN2U5N2YzZmJjM2E=";
-const REFRESH_TOKEN = "AQA-46a_erftWahtM8Rmu4iYAFZBzITDUza3rKYSjaB74btApWdBxaEpG-zfc4vWcsDIXVJAok8S2fBreovrCFMhc1e4rRmJsYSHEQkyycm8fZFqHz0HyBpcmgLiETyp3Io";
+// require('dotenv').config();
+
+const CLIENT_AUTH = process.env.REACT_APP_CLIENT_AUTH;
+const REFRESH_TOKEN = process.env.REACT_APP_REFRESH_TOKEN;
 
 const body = document.querySelector("#root");
 
@@ -27,7 +27,7 @@ function App(){
 	const [isLocked, setIsLocked] = useState(false);
 	const [isListening, setIsListening] = useState(true);
 
-	const [haveAtual, setHaveAtual] = useState('');
+	const [hasCurrent, setHasCurrent] = useState('');
 
 
 	const searchParameters = {
@@ -39,8 +39,6 @@ function App(){
 	};
 
 	useEffect(() => {
-		console.log(CLIENT_AUTH.toString('base64'));
-
 		//API Access Token
 		var authParameters = {
 			method: 'POST',
@@ -48,33 +46,17 @@ function App(){
 				'Authorization': 'Basic ' + CLIENT_AUTH,
 				'Content-Type' : 'application/x-www-form-urlencoded'
 			},
-			// body: 'grant_type=client_credentials'
 			body: 'grant_type=refresh_token&refresh_token=' + REFRESH_TOKEN
-			// json: true
-			// body: 'grant_type=client_credentials&client_id=' + CLIENT_ID + '&client_secret=' + CLIENT_SECRET
 		}
 		fetch('https://accounts.spotify.com/api/token', authParameters)
 			.then(result => result.json())
 			.then(data => {
 				setAccessToken(data.access_token);
-				console.log(`accessToken: Bearer ${data.access_token}`)
 			})
 	}, [])
 
-
-
-	// queue()
-
-	// const queue = () => {}
-
-	// arrow function to use useEffect (useEffect serve pra ficar de olho em algo que possa ser mudado)
-
 	async function getQueue(){
 		clearSearchBar();
-
-		let queueHeader = document.createElement('div');
-		queueHeader.id = "queueHeader";
-		queueHeader.className = "alnL mx-2 row row-cols-1";
 
 		await fetch('https://api.spotify.com/v1/me/player/queue', searchParameters)
 			.then(response => response.json())
@@ -82,12 +64,11 @@ function App(){
 				setIsLocked(true);
 				if(data.currently_playing == null){
 					setIsListening(false);
-					setTracks([]);
+					setHasCurrent(false);
 				}
 				else{
 					setTracks(data.queue);
-					setHaveAtual(data.currently_playing);
-					removeCurrentSongCard();
+					setHasCurrent(data.currently_playing);
 					setIsListening(true);
 				}
 			})
@@ -102,55 +83,14 @@ function App(){
 		}
 	}
 
-	function removeCurrentSongCard(){
-		let fila = document.querySelector("#queueHeader");
-		if(fila != null){
-			fila.remove();
-		}	
-	}
-
 	async function search(){
-		console.log("Search for " + searchInput);
-		console.log("access token response " + accessToken);
-
 		setIsListening(true)
-
 		setIsLocked(false);
-
-		// removeCurrentSongCard();
-		setHaveAtual(false);
-
-		// https://api.spotify.com/v1/search
-		// 'q=' + pesquisa + '&type=track'
-		// data.items.external_urls.spotify
-
-
-		//GET request pra pegar id das musicas
-		// const searchParameters = {
-		// 	method: 'GET',
-		// 	headers: {
-		// 		'Content-Type' : 'application/json',
-		// 		'Authorization': 'Bearer ' + accessToken
-		// 	}
-		// }
-
-
-//PESQUISA ALBUNS DO ARTISTA INSERIDO ===============================
-
-		// var artistID = await fetch('https://api.spotify.com/v1/search?q=' + searchInput + '&type=artist', searchParameters)
-		// 	.then(response => response.json())
-		// 	.then(data => {return data.artists.items[0].id})
-
-		// var returnedAlbums = await fetch('https://api.spotify.com/v1/artists/' + artistID + '/albums' + '?include_groups=album&market=BR&limit=50', searchParameters)
-		// 	.then(response => response.json())
-		// 	.then(data => setAlbums(data.items))
-
-//=================================================================== aqui
+		setHasCurrent(false);
 	
 		await fetch('https://api.spotify.com/v1/search?q=' + searchInput + '&type=track&limit=50', searchParameters)
 			.then(response => response.json())
 			.then(data => {
-				console.log(data);
 				setTracks(data.tracks.items);
 			})
 		
@@ -168,7 +108,6 @@ function App(){
 		}
 		await fetch('https://api.spotify.com/v1/me/player/queue?uri=' + trackUri, queueParameters)
 			.then(response => {
-				console.log(response.status);
 				if(response.status === 204 || response.status === 200){
 					createAlert(songAddedAlert());
 				}
@@ -254,13 +193,13 @@ function App(){
 				</InputGroup>
 			</div>
 			<div id="resultado" className="alnL mx-2 row row-cols-1 dark">
-				{haveAtual && (
+				{hasCurrent && (
 						
 						<>
 						<p id="emRep"> Em reprodução </p>
 						<div id="card" className="cartao dark my-1 borda">
-							<img className="cartao linha cover py-1" src={haveAtual.album.images[0].url} alt="song album"></img>
-							<p className="mx-2 my-0 linha songName">{haveAtual.name}</p>
+							<img className="cartao linha cover py-1" src={hasCurrent.album.images[0].url} alt="song album"></img>
+							<p className="mx-2 my-0 linha songName">{hasCurrent.name}</p>
 						</div>
 						<p id="next"> A seguir </p>
 						</>	
@@ -277,14 +216,16 @@ function App(){
 					)
 				}
 
-				{tracks.map( (track, i) => {
-					return (
-						<div id="card" className="cartao dark my-1 borda" onClick={() => handleMusicSelection(track.uri)} style={{ cursor: "pointer" }}>
-							<img className="cartao linha cover py-1" src={track.album.images[0].url} alt="song album"></img>
-							<p className="mx-2 my-0 linha songName">{track.name}</p>
-						</div>
-					)
-				})}
+				{isListening && (
+					tracks.map( (track, i) => {
+						return (
+							<div id="card" className="cartao dark my-1 borda" onClick={() => handleMusicSelection(track.uri)} style={{ cursor: "pointer" }}>
+								<img className="cartao linha cover py-1" src={track.album.images[0].url} alt="song album"></img>
+								<p className="mx-2 my-0 linha songName">{track.name}</p>
+							</div>
+						)
+					})
+				)}
 			</div>
 		</div>
 	);
