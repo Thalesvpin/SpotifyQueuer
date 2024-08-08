@@ -13,7 +13,6 @@ const CLIENT_AUTH = "MjhkODBiYWQ2MWVhNDAyOGJiZDA3MzgxMDg0ZDViZWI6ZTY5ZWQ0YWZkMzQ
 const REFRESH_TOKEN = "AQA-46a_erftWahtM8Rmu4iYAFZBzITDUza3rKYSjaB74btApWdBxaEpG-zfc4vWcsDIXVJAok8S2fBreovrCFMhc1e4rRmJsYSHEQkyycm8fZFqHz0HyBpcmgLiETyp3Io";
 
 const body = document.querySelector("#root");
-const searchBar = document.querySelector("#search-bar");
 
 function delay(ms){
 	return new Promise(resolve => 
@@ -75,7 +74,6 @@ function App(){
 
 		let queueHeader = document.createElement('div');
 		queueHeader.id = "queueHeader";
-		// queueHeader.style.cursor = "pointer";
 		queueHeader.className = "alnL mx-2 row row-cols-1";
 
 		await fetch('https://api.spotify.com/v1/me/player/queue', searchParameters)
@@ -84,6 +82,7 @@ function App(){
 				setIsLocked(true);
 				if(data.currently_playing == null){
 					setIsListening(false);
+					setTracks([]);
 				}
 				else{
 					setTracks(data.queue);
@@ -97,6 +96,7 @@ function App(){
 
 	function clearSearchBar(){
 		if(searchInput !== ""){
+			const searchBar = document.querySelector("#search-bar");
 			searchBar.value = "";
 			setSearchInput("");
 		}
@@ -168,7 +168,8 @@ function App(){
 		}
 		await fetch('https://api.spotify.com/v1/me/player/queue?uri=' + trackUri, queueParameters)
 			.then(response => {
-				if(response.status === 204){
+				console.log(response.status);
+				if(response.status === 204 || response.status === 200){
 					createAlert(songAddedAlert());
 				}
 				else{
@@ -239,7 +240,7 @@ function App(){
 					<FormControl
 						id="search-bar"
 						placeholder="Buscar..."
-						type="input"
+						type="text"
 						onKeyPress={event => {
 							if(event.key === "Enter"){
 								search();
