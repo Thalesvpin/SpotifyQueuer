@@ -11,6 +11,8 @@ import logo from "./imgs/logo.png";
 
 const CLIENT_AUTH = process.env.REACT_APP_CLIENT_AUTH;
 const REFRESH_TOKEN = process.env.REACT_APP_REFRESH_TOKEN;
+const CLIENT_ID = process.env.REACT_APP_CLIENT_ID;
+const REDIRECT_URI = process.env.REDIRECT_URI;
 
 const body = document.querySelector("#root");
 
@@ -21,8 +23,10 @@ function delay(ms){
 };
 
 function App(){
-	const [searchInput, setSearchInput] = useState("");
 	const [accessToken, setAccessToken] = useState("");
+	const [authorizationCode, setAuthorizationCode] = useState("");
+	const [refreshToken, setRefreshToken] = useState("");
+	const [searchInput, setSearchInput] = useState("");
 	const [tracks, setTracks] = useState([]);
 	const [isLocked, setIsLocked] = useState(false);
 	const [isListening, setIsListening] = useState(true);
@@ -34,31 +38,82 @@ function App(){
 		method: 'GET',
 		headers: {
 			'Content-Type' : 'application/json',
-			'Authorization': 'Bearer ' + accessToken
+			'Authorization': `Bearer ${accessToken}`
 		}
 	};
 
 	useEffect(() => {
-		//API Access Token
-		var authParameters = {
+		// console.log('isso ta rodando?');
+		const params = new URLSearchParams(window.location.search);
+		if(params.size > 0){
+			const code = params.get('code');
+			setAuthorizationCode(code);
+			window.history.replaceState({}, document.title, window.location.pathname);
+		}
+		refreshAccessToken();
+	}, [setAuthorizationCode,refreshAccessToken]);
+
+	async function requestUserAuthorization(){
+		window.open(`https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${REDIRECT_URI}`,'_blank');
+	}
+
+	async function requestAccessToken(){
+		var config = {
 			method: 'POST',
 			headers: {
-				'Authorization': 'Basic ' + CLIENT_AUTH,
+				'Authorization': `Basic ${CLIENT_AUTH}`,
 				'Content-Type' : 'application/x-www-form-urlencoded'
 			},
-			body: 'grant_type=refresh_token&refresh_token=' + REFRESH_TOKEN
+			body: `grant_type=authorization_code&code=${authorizationCode}&redirect_uri=${REDIRECT_URI}`
 		}
-		fetch('https://accounts.spotify.com/api/token', authParameters)
+		fetch('https://accounts.spotify.com/api/token', config)
 			.then(result => result.json())
 			.then(data => {
+				setRefreshToken(data.refresh_token);
 				setAccessToken(data.access_token);
+				refreshTokenTimerLoop();
 			})
-	}, [])
+	}
+
+	async function refreshAccessToken(){
+		console.log('refreshing token...');
+		var config = {
+			method: 'POST',
+			headers: {
+				'Authorization': `Basic ${CLIENT_AUTH}`,
+				'Content-Type' : 'application/x-www-form-urlencoded'
+			},
+			body: `grant_type=refresh_token&refresh_token=${REFRESH_TOKEN}`
+		}
+		try{
+			fetch('https://accounts.spotify.com/api/token', config)
+				.then(result => result.json())
+				.then(async data => {
+					if(data.error_description === "Refresh token revoked"){
+						console.log('entrou aqui');
+						await requestUserAuthorization();
+						await requestAccessToken();
+						return;
+					}
+					setAccessToken(data.access_token);
+					refreshTokenTimerLoop();
+				})
+		}
+		catch(error){
+			console.log('Error refreshing access token:', error);
+		}
+	}
+
+	async function refreshTokenTimerLoop(){
+		setTimeout(() => {
+			refreshAccessToken();
+		}, 3660000);
+	}
 
 	async function getQueue(){
 		clearSearchBar();
 
-		await fetch('https://api.spotify.com/v1/me/player/queue', searchParameters)
+		await fetch('https://api.spotify.com/me/player/queue', searchParameters)
 			.then(response => response.json())
 			.then(data => {
 				setIsLocked(true);
