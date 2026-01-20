@@ -12,7 +12,7 @@ import logo from "./imgs/logo.png";
 const CLIENT_AUTH = process.env.REACT_APP_CLIENT_AUTH;
 const REFRESH_TOKEN = process.env.REACT_APP_REFRESH_TOKEN;
 const CLIENT_ID = process.env.REACT_APP_CLIENT_ID;
-const REDIRECT_URI = process.env.REDIRECT_URI;
+const REDIRECT_URI = "https://spotifyqueuer.netlify.app";
 
 const body = document.querySelector("#root");
 
@@ -48,10 +48,10 @@ function App(){
 		if(params.size > 0){
 			const code = params.get('code');
 			setAuthorizationCode(code);
+			console.log('authorization code:', code);
 			window.history.replaceState({}, document.title, window.location.pathname);
 		}
-		refreshAccessToken();
-	}, [setAuthorizationCode,refreshAccessToken]);
+	}, [setAuthorizationCode]);
 
 	async function requestUserAuthorization(){
 		window.open(`https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${REDIRECT_URI}`,'_blank');
@@ -90,7 +90,6 @@ function App(){
 				.then(result => result.json())
 				.then(async data => {
 					if(data.error_description === "Refresh token revoked"){
-						console.log('entrou aqui');
 						await requestUserAuthorization();
 						await requestAccessToken();
 						return;
@@ -113,20 +112,31 @@ function App(){
 	async function getQueue(){
 		clearSearchBar();
 
-		await fetch('https://api.spotify.com/me/player/queue', searchParameters)
-			.then(response => response.json())
-			.then(data => {
-				setIsLocked(true);
-				if(data.currently_playing == null){
-					setIsListening(false);
-					setHasCurrent(false);
-				}
-				else{
-					setTracks(data.queue);
-					setHasCurrent(data.currently_playing);
-					setIsListening(true);
-				}
-			})
+		try{
+			await fetch('https://api.spotify.com/me/player/queue', searchParameters)
+				.then(response => response.json())
+				.then(data => {
+					if(data?.error){
+						console.log('erro na fila', data.error);
+						throw data.error;
+					}
+					setIsLocked(true);
+					if(data.currently_playing == null){
+						setIsListening(false);
+						setHasCurrent(false);
+					}
+					else{
+						setTracks(data.queue);
+						setHasCurrent(data.currently_playing);
+						setIsListening(true);
+					}
+				})
+		}
+		catch(error){
+			if(error.status === 401){
+				refreshAccessToken();
+			}
+		}
 
 	}
 
