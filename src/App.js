@@ -42,7 +42,7 @@ function App(){
 
 	const requestUserAuthorization = useCallback(() => {
 		console.log('requesting user authorization...');
-		window.open(`https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${REDIRECT_URI}`,'_blank');
+		window.location.replace(`https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${REDIRECT_URI}`,'_blank');
 	}, []);
 
 	const refreshAccessToken = useCallback(async () => {
@@ -112,11 +112,19 @@ function App(){
 		}
 	}, [setAuthorizationCode, requestAccessToken]);
 
-	function faildRequest(){
-		requestUserAuthorization();
-		// pagina recarrega
-		requestAccessToken();
+	useEffect(() => {
+		if(authorizationCode) {
+			requestAccessToken();
+		}
+	}, [authorizationCode, requestAccessToken]);
 
+	function faildRequest(error){
+		if(error.status === 400){
+			requestUserAuthorization();
+		}
+		if(error.status === 401){
+			refreshAccessToken();
+		}
 	}
 
 	async function getQueue(){
@@ -144,12 +152,7 @@ function App(){
 		}
 		catch(error){
 			console.log('Erro:', error);
-			if(error.status === 400){
-				requestUserAuthorization();
-			}
-			if(error.status === 401){
-				refreshAccessToken();
-			}
+			faildRequest(error);
 		}
 
 	}
