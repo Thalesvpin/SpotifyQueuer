@@ -40,13 +40,6 @@ function App(){
 		}
 	};
 
-	// function ORDEM(){
-	// 	requestUserAuthorization();
-	// 	// pagina recarrega
-	// 	requestAccessToken();
-
-	// }
-
 	const requestUserAuthorization = useCallback(() => {
 		console.log('requesting user authorization...');
 		window.open(`https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${REDIRECT_URI}`,'_blank');
@@ -84,6 +77,7 @@ function App(){
 
 	const requestAccessToken = useCallback(async () =>{
 		console.log('requesting access token...');
+		console.log('auth code: ', authorizationCode);
 		var config = {
 			method: 'POST',
 			headers: {
@@ -95,6 +89,7 @@ function App(){
 		fetch('https://accounts.spotify.com/api/token', config)
 			.then(result => result.json())
 			.then(data => {
+				console.log('config enviada: ', config)
 				console.log('access token data:', data);
 				setRefreshToken(data.refresh_token);
 				setAccessToken(data.access_token);
@@ -113,9 +108,16 @@ function App(){
 			setAuthorizationCode(code);
 			console.log('authorization code:', code);
 			window.history.replaceState({}, document.title, window.location.pathname);
-			requestAccessToken()
+			requestAccessToken();
 		}
 	}, [setAuthorizationCode, requestAccessToken]);
+
+	function faildRequest(){
+		requestUserAuthorization();
+		// pagina recarrega
+		requestAccessToken();
+
+	}
 
 	async function getQueue(){
 		clearSearchBar();
@@ -142,8 +144,11 @@ function App(){
 		}
 		catch(error){
 			console.log('Erro:', error);
-			if(error.status === 401 || error.status === 400){
+			if(error.status === 400){
 				requestUserAuthorization();
+			}
+			if(error.status === 401){
+				refreshAccessToken();
 			}
 		}
 
