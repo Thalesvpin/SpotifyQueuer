@@ -48,6 +48,7 @@ function App(){
 	// }
 
 	const requestUserAuthorization = useCallback(() => {
+		console.log('requesting user authorization...');
 		window.open(`https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${REDIRECT_URI}`,'_blank');
 	}, []);
 
@@ -82,6 +83,7 @@ function App(){
 	}, [requestUserAuthorization]);
 
 	const requestAccessToken = useCallback(async () =>{
+		console.log('requesting access token...');
 		var config = {
 			method: 'POST',
 			headers: {
@@ -93,6 +95,7 @@ function App(){
 		fetch('https://accounts.spotify.com/api/token', config)
 			.then(result => result.json())
 			.then(data => {
+				console.log('access token data:', data);
 				setRefreshToken(data.refresh_token);
 				setAccessToken(data.access_token);
 				
