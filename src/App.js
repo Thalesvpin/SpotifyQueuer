@@ -59,10 +59,10 @@ function App(){
 			fetch('https://accounts.spotify.com/api/token', config)
 				.then(result => result.json())
 				.then(async data => {
-					if(data.error_description === "Refresh token revoked"){
-						await requestUserAuthorization();
-						return;
-					}
+					// if(data.error_description === "Refresh token revoked"){
+					// 	await requestUserAuthorization();
+					// 	return;
+					// }
 					setAccessToken(data.access_token);
 					
 					setTimeout(() => {
