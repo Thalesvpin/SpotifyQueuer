@@ -10,7 +10,7 @@ import logo from "./imgs/logo.png";
 const CLIENT_AUTH = process.env.REACT_APP_CLIENT_AUTH;
 const REFRESH_TOKEN = process.env.REACT_APP_REFRESH_TOKEN;
 const CLIENT_ID = process.env.REACT_APP_CLIENT_ID;
-const REDIRECT_URI = "https://localhost:3000";
+const REDIRECT_URI = "https://spotifyqueuer.netlify.app";
 
 const body = document.querySelector("#root");
 
