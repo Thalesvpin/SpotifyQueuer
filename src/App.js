@@ -4,15 +4,13 @@
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {InputGroup, FormControl} from 'react-bootstrap';
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useCallback} from 'react';
 import logo from "./imgs/logo.png";
-
-// require('dotenv').config();
 
 const CLIENT_AUTH = process.env.REACT_APP_CLIENT_AUTH;
 const REFRESH_TOKEN = process.env.REACT_APP_REFRESH_TOKEN;
 const CLIENT_ID = process.env.REACT_APP_CLIENT_ID;
-const REDIRECT_URI = "https://spotifyqueuer.netlify.app";
+const REDIRECT_URI = "https://localhost:3000";
 
 const body = document.querySelector("#root");
 
@@ -30,9 +28,9 @@ function App(){
 	const [tracks, setTracks] = useState([]);
 	const [isLocked, setIsLocked] = useState(false);
 	const [isListening, setIsListening] = useState(true);
-
 	const [hasCurrent, setHasCurrent] = useState('');
 
+	
 
 	const searchParameters = {
 		method: 'GET',
@@ -42,40 +40,18 @@ function App(){
 		}
 	};
 
-	useEffect(() => {
-		// console.log('isso ta rodando?');
-		const params = new URLSearchParams(window.location.search);
-		if(params.size > 0){
-			const code = params.get('code');
-			setAuthorizationCode(code);
-			console.log('authorization code:', code);
-			window.history.replaceState({}, document.title, window.location.pathname);
-		}
-	}, [setAuthorizationCode]);
+	// function ORDEM(){
+	// 	requestUserAuthorization();
+	// 	// pagina recarrega
+	// 	requestAccessToken();
 
-	async function requestUserAuthorization(){
+	// }
+
+	const requestUserAuthorization = useCallback(() => {
 		window.open(`https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${REDIRECT_URI}`,'_blank');
-	}
+	}, []);
 
-	async function requestAccessToken(){
-		var config = {
-			method: 'POST',
-			headers: {
-				'Authorization': `Basic ${CLIENT_AUTH}`,
-				'Content-Type' : 'application/x-www-form-urlencoded'
-			},
-			body: `grant_type=authorization_code&code=${authorizationCode}&redirect_uri=${REDIRECT_URI}`
-		}
-		fetch('https://accounts.spotify.com/api/token', config)
-			.then(result => result.json())
-			.then(data => {
-				setRefreshToken(data.refresh_token);
-				setAccessToken(data.access_token);
-				refreshTokenTimerLoop();
-			})
-	}
-
-	async function refreshAccessToken(){
+	const refreshAccessToken = useCallback(async () => {
 		console.log('refreshing token...');
 		var config = {
 			method: 'POST',
@@ -91,23 +67,52 @@ function App(){
 				.then(async data => {
 					if(data.error_description === "Refresh token revoked"){
 						await requestUserAuthorization();
-						await requestAccessToken();
 						return;
 					}
 					setAccessToken(data.access_token);
-					refreshTokenTimerLoop();
+					
+					setTimeout(() => {
+						refreshAccessToken();
+					}, 3660000);
 				})
 		}
 		catch(error){
 			console.log('Error refreshing access token:', error);
 		}
-	}
+	}, [requestUserAuthorization]);
 
-	async function refreshTokenTimerLoop(){
-		setTimeout(() => {
-			refreshAccessToken();
-		}, 3660000);
-	}
+	const requestAccessToken = useCallback(async () =>{
+		var config = {
+			method: 'POST',
+			headers: {
+				'Authorization': `Basic ${CLIENT_AUTH}`,
+				'Content-Type' : 'application/x-www-form-urlencoded'
+			},
+			body: `grant_type=authorization_code&code=${authorizationCode}&redirect_uri=${REDIRECT_URI}`
+		}
+		fetch('https://accounts.spotify.com/api/token', config)
+			.then(result => result.json())
+			.then(data => {
+				setRefreshToken(data.refresh_token);
+				setAccessToken(data.access_token);
+				
+				setTimeout(() => {
+					refreshAccessToken();
+				}, 3660000);
+			})
+	}, [authorizationCode, refreshAccessToken]);
+
+	useEffect(() => {
+		// console.log('isso ta rodando?');
+		const params = new URLSearchParams(window.location.search);
+		if(params.size > 0){
+			const code = params.get('code');
+			setAuthorizationCode(code);
+			console.log('authorization code:', code);
+			window.history.replaceState({}, document.title, window.location.pathname);
+			requestAccessToken()
+		}
+	}, [setAuthorizationCode, requestAccessToken]);
 
 	async function getQueue(){
 		clearSearchBar();
@@ -133,8 +138,9 @@ function App(){
 				})
 		}
 		catch(error){
-			if(error.status === 401){
-				refreshAccessToken();
+			console.log('Erro:', error);
+			if(error.status === 401 || error.status === 400){
+				requestUserAuthorization();
 			}
 		}
 
