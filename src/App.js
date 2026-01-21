@@ -108,9 +108,8 @@ function App(){
 			setAuthorizationCode(code);
 			console.log('authorization code:', code);
 			window.history.replaceState({}, document.title, window.location.pathname);
-			requestAccessToken();
 		}
-	}, [setAuthorizationCode, requestAccessToken]);
+	}, [setAuthorizationCode]);
 
 	useEffect(() => {
 		if(authorizationCode) {
@@ -131,7 +130,7 @@ function App(){
 		clearSearchBar();
 
 		try{
-			await fetch('https://api.spotify.com/me/player/queue', searchParameters)
+			await fetch('https://api.spotify.com/v1/me/player/queue', searchParameters)
 				.then(response => response.json())
 				.then(data => {
 					if(data?.error){
